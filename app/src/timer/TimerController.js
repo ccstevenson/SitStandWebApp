@@ -18,14 +18,27 @@
 
           // used to update the UI
           function updateTime() {
-            startTimestamp = new Date(startTimestamp.getTime() + 1000);
+            var currentTimestamp = Date.now();
 
-            element.text(startTimestamp);
+            var diff = Math.round((currentTimestamp - startTimestamp) / 1000);
+
+            var d = Math.floor(diff / (24 * 60 * 60));
+            diff = diff - (d * 24 * 60 * 60);
+            var h = Math.floor(diff / (60 * 60));
+            diff = diff - (h * 60 * 60);
+            var m = Math.floor(diff / (60));
+            diff = diff - (m * 60);
+            var s = diff;
+
+            var result = d + " : " + h + " : " + m + " : " + s;
+
+            //element.text(d + " : " + h + " : " + m + " : " + s);
+            element.text(result);
           }
 
           // watch the expression, and update the UI on change.
           scope.$watch(attrs.myCurrentTime, function (value) {
-            startTimestamp = new Date(value);
+            startTimestamp = value;
             updateTime();
           });
 
@@ -80,6 +93,14 @@
 
       var timestampObj = {};
       timestampObj[timestamp] = "standing";
+
+      if (!$scope.data.hasOwnProperty('timestamps')) { // This is the first entry ever for this user. Move into user account creation.
+        $scope.data['timestamps'] = {};
+      }
+
+      if (!$scope.data.timestamps.hasOwnProperty(readableDateKey)) { // This is the first entry for today.
+        $scope.data.timestamps[readableDateKey] = {};
+      }
 
       $scope.data.timestamps[readableDateKey][timestamp] = "standing";
 
