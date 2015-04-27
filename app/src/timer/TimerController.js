@@ -32,7 +32,6 @@
 
             var result = d + " : " + h + " : " + m + " : " + s;
 
-            //element.text(d + " : " + h + " : " + m + " : " + s);
             element.text(result);
           }
 
@@ -102,7 +101,7 @@
         $scope.data.timestamps[readableDateKey] = {};
       }
 
-      $scope.data.timestamps[readableDateKey][timestamp] = "standing";
+      $scope.data.timestamps[readableDateKey][timestamp] = $scope.data.currentlyStanding;
 
       $scope.data.latestTimestamp = timestamp;
       setClockTime();
@@ -143,7 +142,7 @@
       var yyyy = this.getFullYear().toString();
       var mm = (this.getMonth() + 1).toString(); // getMonth() is zero-based
       var dd = this.getDate().toString();
-      return yyyy + (mm[1] ? mm : "0" + mm[0]) + (dd[1] ? dd : "0" + dd[0]);
+      return yyyy + "-" + (mm[1] ? mm : "0" + mm[0]) + "-" + (dd[1] ? dd : "0" + dd[0]);
     };
 
   }
