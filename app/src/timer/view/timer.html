@@ -3,7 +3,11 @@
 </div>
 
 <div layout="row" layout-align="center center">
-    <md-button class="md-raised md-primary" ng-click="sitOrStand()">{{toggleButtonString}}</button>
+    <md-button class="md-raised md-primary" ng-click="sitOrStand()">{{toggleButtonString}}</md-button>
+</div>
+
+<div layout="row" layout-align="center center" style="margin-top: 10px;"> <!--Move to right of sit/stand button, replace text with pause icon -->
+    <md-button class="md-raised" ng-click="pause()">{{pauseButtonString}}</md-button>
 </div>
 
 Goal progress:

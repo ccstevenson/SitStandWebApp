@@ -5,8 +5,8 @@
 
     // Register the 'myCurrentTime' directive factory method.
     // We inject $interval and dateFilter service since the factory method is DI.
-    .directive('timer', ['$interval', 'dateFilter', 'GoalTracker',
-      function ($interval, dateFilter, GoalTracker) {
+    .directive('timer', ['$interval', 'dateFilter', 'GoalTracker', 'TimeService',
+      function ($interval, dateFilter, GoalTracker, TimeService) {
         // return the directive link function. (compile function not needed)
         return function (scope, element, attrs) {
           var startTimestamp,  // date format
@@ -14,7 +14,7 @@
 
           // used to update the UI
           function updateTime() {
-            if (startTimestamp !== "Loading...") {
+            if (startTimestamp !== "Loading..." && !TimeService.pause) {
               element.text(calculateDifference());
             }
           }
@@ -67,7 +67,13 @@
       };
     })
 
-    .controller('TimerController', function ($scope, firebaseFactory, GoalTracker) {
+    .service('TimeService', function() { // TODO: remove, put this and any template pieces in the timer directive.
+      return {
+        pause: false
+      }
+    })
+
+    .controller('TimerController', function ($scope, firebaseFactory, GoalTracker, TimeService) {
 
       var syncObject = firebaseFactory.loadUserData('User1');
       syncObject.$bindTo($scope, "data").then(function () {
@@ -82,8 +88,10 @@
           $scope.data = {};
 
           $scope.toggleButtonString = "Loading...";
+          $scope.pauseButtonString = "Pause";
           $scope.data.latestTimestamp = "Loading...";
           $scope.GoalTracker = GoalTracker;
+          $scope.TimeService = TimeService;
         }
       }
 
@@ -95,6 +103,11 @@
         recordTimestamp();
         $scope.data.currentlyStanding = !$scope.data.currentlyStanding;
         setToggleButtonString();
+      };
+
+      $scope.pause = function() {
+        TimeService.pause = !TimeService.pause;
+        $scope.pauseButtonString = TimeService.pause ? "Pause" : "Resume";
       };
 
       function setToggleButtonString() {
