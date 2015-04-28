@@ -9,7 +9,7 @@
 
     // Register the 'myCurrentTime' directive factory method.
     // We inject $interval and dateFilter service since the factory method is DI.
-    .directive('myCurrentTime', ['$interval', 'dateFilter',
+    .directive('timer', ['$interval', 'dateFilter',
       function ($interval, dateFilter) {
         // return the directive link function. (compile function not needed)
         return function (scope, element, attrs) {
@@ -18,6 +18,12 @@
 
           // used to update the UI
           function updateTime() {
+            if (startTimestamp !== "Loading...") {
+              element.text(calculateDifference());
+            }
+          }
+
+          function calculateDifference() {
             var currentTimestamp = Date.now();
 
             var diff = Math.round((currentTimestamp - startTimestamp) / 1000);
@@ -30,27 +36,25 @@
             diff = diff - (m * 60);
             var s = diff;
 
-            var result = d + " : " + h + " : " + m + " : " + s;
-
-            element.text(result);
+            return result = d + " : " + h + " : " + m + " : " + s;
           }
 
           // watch the expression, and update the UI on change.
-          scope.$watch(attrs.myCurrentTime, function (value) {
+          scope.$watch(attrs.timer, function (value) {
             startTimestamp = value;
-            updateTime();
+
+            if (value !== "Loading...") {
+              updateTime();
+            }
           });
 
           stopTime = $interval(updateTime, 1000);
 
-          // listen on DOM destroy (removal) event, and cancel the next UI update
-          // to prevent updating time after the DOM element was removed.
           element.on('$destroy', function () {
             $interval.cancel(stopTime);
           });
         }
       }]);
-  ;
 
   function TimerController($scope, firebaseFactory) {
 
@@ -73,7 +77,6 @@
 
     function onFirebaseDataLoad() {
       setToggleButtonString();
-      setClockTime();
     }
 
     $scope.sitOrStand = function () {
@@ -104,38 +107,6 @@
       $scope.data.timestamps[readableDateKey][timestamp] = $scope.data.currentlyStanding;
 
       $scope.data.latestTimestamp = timestamp;
-      setClockTime();
-    }
-
-    function setClockTime() {
-      $scope.clockTime = timeSince(new Date($scope.data.latestTimestamp));
-    }
-
-    function timeSince(date) {
-      var seconds = Math.floor((new Date() - date) / 1000);
-
-      var interval = Math.floor(seconds / 31536000);
-
-      if (interval > 1) {
-        return interval + " years";
-      }
-      interval = Math.floor(seconds / 2592000);
-      if (interval > 1) {
-        return interval + " months";
-      }
-      interval = Math.floor(seconds / 86400);
-      if (interval > 1) {
-        return interval + " days";
-      }
-      interval = Math.floor(seconds / 3600);
-      if (interval > 1) {
-        return interval + " hours";
-      }
-      interval = Math.floor(seconds / 60);
-      if (interval > 1) {
-        return interval + " minutes";
-      }
-      return Math.floor(seconds) + " seconds";
     }
 
     Date.prototype.yyyymmdd = function () {
@@ -146,6 +117,4 @@
     };
 
   }
-
-
 })();
