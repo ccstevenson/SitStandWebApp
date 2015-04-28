@@ -25,6 +25,7 @@
             var diff = Math.round((currentTimestamp - startTimestamp) / 1000);
 
             GoalTracker.progress = diff;
+            GoalTracker.percent = 100 * (diff / GoalTracker.goal); // Move into setter in service.
 
             var d = Math.floor(diff / (24 * 60 * 60));
             diff = diff - (d * 24 * 60 * 60);
@@ -56,8 +57,13 @@
 
     .service('GoalTracker', function () {
       return {
-        goal: 30,
-        progress: 0
+        goal: 1800,
+        progress: 0,
+        percent: 0
+
+        //setPercent: function() {
+        //
+        //}
       };
     })
 
