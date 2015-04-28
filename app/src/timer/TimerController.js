@@ -2,15 +2,11 @@
 
   angular
     .module('users')
-    .controller('TimerController', [
-      '$scope', 'firebaseFactory',
-      TimerController
-    ])
 
     // Register the 'myCurrentTime' directive factory method.
     // We inject $interval and dateFilter service since the factory method is DI.
-    .directive('timer', ['$interval', 'dateFilter',
-      function ($interval, dateFilter) {
+    .directive('timer', ['$interval', 'dateFilter', 'GoalTracker',
+      function ($interval, dateFilter, GoalTracker) {
         // return the directive link function. (compile function not needed)
         return function (scope, element, attrs) {
           var startTimestamp,  // date format
@@ -27,6 +23,8 @@
             var currentTimestamp = Date.now();
 
             var diff = Math.round((currentTimestamp - startTimestamp) / 1000);
+
+            GoalTracker.progress = diff;
 
             var d = Math.floor(diff / (24 * 60 * 60));
             diff = diff - (d * 24 * 60 * 60);
@@ -54,67 +52,74 @@
             $interval.cancel(stopTime);
           });
         }
-      }]);
+      }])
 
-  function TimerController($scope, firebaseFactory) {
+    .service('GoalTracker', function () {
+      return {
+        goal: 30,
+        progress: 0
+      };
+    })
 
-    var syncObject = firebaseFactory.loadUserData('User1');
-    syncObject.$bindTo($scope, "data").then(function () {
-      onFirebaseDataLoad();
-    });
+    .controller('TimerController', function ($scope, firebaseFactory, GoalTracker) {
 
-    initializeView();
+      var syncObject = firebaseFactory.loadUserData('User1');
+      syncObject.$bindTo($scope, "data").then(function () {
+        onFirebaseDataLoad();
+      });
 
-    function initializeView() {
-      // Populates interface while Firebase is resolving.
-      if (!$scope.hasOwnProperty('data')) {
-        $scope.data = {};
+      initializeView();
 
-        $scope.toggleButtonString = "Loading...";
-        $scope.data.latestTimestamp = "Loading...";
-      }
-    }
+      function initializeView() {
+        // Populates interface while Firebase is resolving.
+        if (!$scope.hasOwnProperty('data')) {
+          $scope.data = {};
 
-    function onFirebaseDataLoad() {
-      setToggleButtonString();
-    }
-
-    $scope.sitOrStand = function () {
-      recordTimestamp();
-      $scope.data.currentlyStanding = !$scope.data.currentlyStanding;
-      setToggleButtonString();
-    };
-
-    function setToggleButtonString() {
-      $scope.toggleButtonString = $scope.data.currentlyStanding ? "Sit Down" : "Stand up";
-    }
-
-    function recordTimestamp() {
-      var timestamp = Date.now();
-      var readableDateKey = new Date().yyyymmdd();
-
-      var timestampObj = {};
-      timestampObj[timestamp] = "standing";
-
-      if (!$scope.data.hasOwnProperty('timestamps')) { // This is the first entry ever for this user. Move into user account creation.
-        $scope.data['timestamps'] = {};
+          $scope.toggleButtonString = "Loading...";
+          $scope.data.latestTimestamp = "Loading...";
+          $scope.GoalTracker = GoalTracker;
+        }
       }
 
-      if (!$scope.data.timestamps.hasOwnProperty(readableDateKey)) { // This is the first entry for today.
-        $scope.data.timestamps[readableDateKey] = {};
+      function onFirebaseDataLoad() {
+        setToggleButtonString();
       }
 
-      $scope.data.timestamps[readableDateKey][timestamp] = $scope.data.currentlyStanding;
+      $scope.sitOrStand = function () {
+        recordTimestamp();
+        $scope.data.currentlyStanding = !$scope.data.currentlyStanding;
+        setToggleButtonString();
+      };
 
-      $scope.data.latestTimestamp = timestamp;
-    }
+      function setToggleButtonString() {
+        $scope.toggleButtonString = $scope.data.currentlyStanding ? "Sit Down" : "Stand up";
+      }
 
-    Date.prototype.yyyymmdd = function () {
-      var yyyy = this.getFullYear().toString();
-      var mm = (this.getMonth() + 1).toString(); // getMonth() is zero-based
-      var dd = this.getDate().toString();
-      return yyyy + "-" + (mm[1] ? mm : "0" + mm[0]) + "-" + (dd[1] ? dd : "0" + dd[0]);
-    };
+      function recordTimestamp() {
+        var timestamp = Date.now();
+        var readableDateKey = new Date().yyyymmdd();
 
-  }
-})();
+        var timestampObj = {};
+        timestampObj[timestamp] = "standing";
+
+        if (!$scope.data.hasOwnProperty('timestamps')) { // This is the first entry ever for this user. Move into user account creation.
+          $scope.data['timestamps'] = {};
+        }
+
+        if (!$scope.data.timestamps.hasOwnProperty(readableDateKey)) { // This is the first entry for today.
+          $scope.data.timestamps[readableDateKey] = {};
+        }
+
+        $scope.data.timestamps[readableDateKey][timestamp] = $scope.data.currentlyStanding;
+
+        $scope.data.latestTimestamp = timestamp;
+      }
+
+      Date.prototype.yyyymmdd = function () {
+        var yyyy = this.getFullYear().toString();
+        var mm = (this.getMonth() + 1).toString(); // getMonth() is zero-based
+        var dd = this.getDate().toString();
+        return yyyy + "-" + (mm[1] ? mm : "0" + mm[0]) + "-" + (dd[1] ? dd : "0" + dd[0]);
+      };
+    })
+}());
