@@ -12,7 +12,7 @@
         var ref = new Firebase("https://sit-stand.firebaseio.com/" + userId);
 
         // this uses AngularFire to create the synchronized array
-        return $firebaseObject(ref);
+        return ref;
       }
     }
   }

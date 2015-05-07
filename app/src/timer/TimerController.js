@@ -67,18 +67,38 @@
       };
     })
 
-    .service('TimeService', function() { // TODO: remove, put this and any template pieces in the timer directive.
+    .directive('timerRewrite', function () {
+      return {
+        restrict: 'E',
+        template: 'timer-rewrite.html'
+      }
+    })
+
+    .service('TimeService', function () { // TODO: remove, put this and any template pieces in the timer directive.
       return {
         pause: false
       }
     })
 
-    .controller('TimerController', function ($scope, firebaseFactory, GoalTracker, TimeService) {
-
-      var syncObject = firebaseFactory.loadUserData('User1');
+    .controller('TimerController', function ($scope, firebaseFactory, GoalTracker, TimeService, $firebaseAuth, $firebaseObject) {
+      var ref = firebaseFactory.loadUserData('User1');
+      var syncObject = $firebaseObject(ref);
       syncObject.$bindTo($scope, "data").then(function () {
         onFirebaseDataLoad();
       });
+
+      // Move to AuthService.
+      var auth = $firebaseAuth(syncObject);
+
+      $scope.facebookLogin = function () {
+        ref.authWithOAuthPopup("facebook", function (error, authData) {
+          if (error) {
+            console.log("Login Failed!", error);
+          } else {
+            console.log("Authenticated successfully with payload:", authData);
+          }
+        })
+      }
 
       initializeView();
 
@@ -105,7 +125,7 @@
         setToggleButtonString();
       };
 
-      $scope.pause = function() {
+      $scope.pause = function () {
         TimeService.pause = !TimeService.pause;
         $scope.pauseButtonString = TimeService.pause ? "Pause" : "Resume";
       };
@@ -140,5 +160,6 @@
         var dd = this.getDate().toString();
         return yyyy + "-" + (mm[1] ? mm : "0" + mm[0]) + "-" + (dd[1] ? dd : "0" + dd[0]);
       };
-    })
+    }
+  )
 }());
