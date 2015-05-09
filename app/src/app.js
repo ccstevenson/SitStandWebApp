@@ -1,5 +1,5 @@
 angular
-  .module('starterApp', ['ngRoute', 'ngMaterial', 'users', 'timer', 'firebase'])
+  .module('starterApp', ['ngRoute', 'ngMaterial', 'users', 'timer', 'splash', 'firebase'])
   .config(function ($mdThemingProvider, $mdIconProvider, $routeProvider) {
 
     $mdIconProvider

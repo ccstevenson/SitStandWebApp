@@ -1,7 +1,6 @@
 (function () {
 
-  angular
-    .module('users')
+  angular.module('users')
 
     // Register the 'myCurrentTime' directive factory method.
     // We inject $interval and dateFilter service since the factory method is DI.
@@ -98,7 +97,7 @@
             console.log("Authenticated successfully with payload:", authData);
           }
         })
-      }
+      };
 
       initializeView();
 
